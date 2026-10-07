@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>SignHome — L A F V W</title>
+    <link rel="stylesheet" href="../css/signhome.css" />
+  </head>
+  <body>
+    <header style="padding: 24px 24px 0; max-width: 920px; margin: 0 auto">
+      <p style="letter-spacing: 0.18em; text-transform: uppercase; font-size: 11px; color: var(--muted); margin: 0">
+        ASL control
+      </p>
+      <h1 style="margin: 8px 0 0; font-weight: 500">Five static letters</h1>
+      <p style="color: var(--muted); max-width: 36rem">
+        L, A, F, V, W map onto virtual relays D2 / D3 / D4. Same serial bytes the
+        Arduino Uno R3 firmware expects at 9600 baud.
+      </p>
+    </header>
+    <section class="letters">
+      <article class="card" data-asl="L">
+        <h2>L</h2>
+        <p>Lights On</p>
+        <p class="pin">serial 1 · D2</p>
+      </article>
+      <article class="card" data-asl="A">
+        <h2>A</h2>
+        <p>Lights Off</p>
+        <p class="pin">serial 2 · D2</p>
+      </article>
+      <article class="card" data-asl="F">
+        <h2>F</h2>
+        <p>Fan On</p>
+        <p class="pin">serial 3 · D3</p>
+      </article>
+      <article class="card" data-asl="V">
+        <h2>V</h2>
+        <p>Fan Off</p>
+        <p class="pin">serial 4 · D3</p>
+      </article>
+      <article class="card" data-asl="W">
+        <h2>W</h2>
+        <p>Speaker Toggle</p>
+        <p class="pin">serial 5 · D4</p>
+      </article>
+    </section>
+  </body>
+</html>

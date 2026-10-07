@@ -1,0 +1,17 @@
+{
+  "name": "SignHome",
+  "short_name": "SignHome",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#09090b",
+  "theme_color": "#09090b",
+  "description": "ASL home automation control center using local hand tracking and appliance controls.",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
