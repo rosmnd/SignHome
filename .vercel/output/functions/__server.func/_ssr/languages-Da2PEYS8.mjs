@@ -1,0 +1,86 @@
+import { i as __toESM } from "../_runtime.mjs";
+import { t as cn } from "./utils-C_uf36nf.mjs";
+import { o as require_jsx_runtime, s as require_react } from "../_libs/@radix-ui/react-collection+[...].mjs";
+//#region node_modules/.nitro/vite/services/ssr/assets/languages-Da2PEYS8.js
+var import_react = /* @__PURE__ */ __toESM(require_react());
+var import_jsx_runtime = require_jsx_runtime();
+var FILES = [
+	{
+		id: "python",
+		label: "Python",
+		ext: "signhome.py",
+		source: "\"\"\"SignHome — ASL letter classifier (L, A, F, V, W) and serial map.\n\nPython twin of the browser geometry classifier. Landmarks are 21 MediaPipe\nHands points, signer view, palm toward camera.\n\"\"\"\n\nfrom __future__ import annotations\n\nfrom dataclasses import dataclass\nfrom typing import Literal\n\nGestureId = Literal[\"LIGHTS_ON\", \"LIGHTS_OFF\", \"FAN_ON\", \"FAN_OFF\", \"AUX\"]\nSerialByte = Literal[\"1\", \"2\", \"3\", \"4\", \"5\"]\n\nGESTURES: dict[GestureId, dict] = {\n    \"LIGHTS_ON\": {\"asl\": \"L\", \"serial\": \"1\", \"pin\": \"D2\", \"action\": \"on\", \"label\": \"Lights On\"},\n    \"LIGHTS_OFF\": {\"asl\": \"A\", \"serial\": \"2\", \"pin\": \"D2\", \"action\": \"off\", \"label\": \"Lights Off\"},\n    \"FAN_ON\": {\"asl\": \"F\", \"serial\": \"3\", \"pin\": \"D3\", \"action\": \"on\", \"label\": \"Fan On\"},\n    \"FAN_OFF\": {\"asl\": \"V\", \"serial\": \"4\", \"pin\": \"D3\", \"action\": \"off\", \"label\": \"Fan Off\"},\n    \"AUX\": {\"asl\": \"W\", \"serial\": \"5\", \"pin\": \"D4\", \"action\": \"toggle\", \"label\": \"Speaker Toggle\"},\n}\n\n\n@dataclass\nclass Landmark:\n    x: float\n    y: float\n    z: float = 0.0\n\n\ndef dist(a: Landmark, b: Landmark) -> float:\n    return ((a.x - b.x) ** 2 + (a.y - b.y) ** 2 + (a.z - b.z) ** 2) ** 0.5\n\n\ndef _finger_open(lm: list[Landmark], tip: int, pip: int, mcp: int) -> tuple[bool, float]:\n    wrist = lm[0]\n    d_tip = dist(lm[tip], wrist)\n    d_pip = dist(lm[pip], wrist)\n    d_mcp = dist(lm[mcp], wrist)\n    linear = d_tip / (d_pip + 1e-6)\n    radial = d_tip / (d_mcp + 1e-6)\n    image = (lm[pip].y - lm[tip].y) / (dist(lm[mcp], lm[pip]) + 1e-6)\n    score = 0.45 * (linear - 1) + 0.25 * (radial - 1.15) + 0.3 * image\n    return score > 0.12, score\n\n\ndef _thumb_open(lm: list[Landmark]) -> tuple[bool, float]:\n    palm = dist(lm[0], lm[9]) or 1.0\n    spread = dist(lm[4], lm[5]) / palm\n    reach = dist(lm[4], lm[17]) / palm\n    score = 0.8 * (spread - 0.7) + 0.2 * (reach - 0.9)\n    return score > 0, score\n\n\ndef classify(lm: list[Landmark]) -> GestureId | None:\n    \"\"\"Return the matching ASL letter pose, or None.\"\"\"\n    if len(lm) < 21:\n        return None\n    thumb, t = _thumb_open(lm)\n    index, i = _finger_open(lm, 8, 6, 5)\n    middle, m = _finger_open(lm, 12, 10, 9)\n    ring, r = _finger_open(lm, 16, 14, 13)\n    pinky, p = _finger_open(lm, 20, 18, 17)\n\n    # L, A, F, V, W\n    hits: list[tuple[GestureId, float]] = []\n    if thumb and index and not middle and not ring and not pinky:\n        hits.append((\"LIGHTS_ON\", (t + i - m - r - p) / 5))\n    if not index and not middle and not ring and not pinky and not thumb:\n        hits.append((\"LIGHTS_OFF\", (-i - m - r - p - t) / 5))\n    if not index and middle and ring and pinky:\n        hits.append((\"FAN_ON\", (-i + m + r + p) / 4))\n    if index and middle and not ring and not pinky and not thumb:\n        hits.append((\"FAN_OFF\", (i + m - r - p - t) / 5))\n    if index and middle and ring and not pinky and not thumb:\n        hits.append((\"AUX\", (i + m + r - p - t) / 5))  # W\n\n    if not hits:\n        return None\n    hits.sort(key=lambda h: h[1], reverse=True)\n    return hits[0][0]\n\n\ndef serial_byte(gesture: GestureId) -> SerialByte:\n    \"\"\"Byte sent over USB serial at 9600 baud to the Uno R3.\"\"\"\n    return GESTURES[gesture][\"serial\"]\n\n\nif __name__ == \"__main__\":\n    print(\"SignHome letters:\", [g[\"asl\"] for g in GESTURES.values()])\n    print(\"Serial map:\", {g[\"asl\"]: g[\"serial\"] for g in GESTURES.values()})\n"
+	},
+	{
+		id: "javascript",
+		label: "JavaScript",
+		ext: "classifier.js",
+		source: "/**\n * SignHome — vanilla JavaScript classifier.\n * ASL letters: L, A, F, V, W  →  serial bytes 1–5  →  pins D2 / D3 / D4\n */\n\nexport const GESTURES = {\n  LIGHTS_ON: { asl: \"L\", serial: \"1\", pin: \"D2\", action: \"on\", label: \"Lights On\" },\n  LIGHTS_OFF: { asl: \"A\", serial: \"2\", pin: \"D2\", action: \"off\", label: \"Lights Off\" },\n  FAN_ON: { asl: \"F\", serial: \"3\", pin: \"D3\", action: \"on\", label: \"Fan On\" },\n  FAN_OFF: { asl: \"V\", serial: \"4\", pin: \"D3\", action: \"off\", label: \"Fan Off\" },\n  AUX: { asl: \"W\", serial: \"5\", pin: \"D4\", action: \"toggle\", label: \"Speaker Toggle\" },\n};\n\nfunction dist(a, b) {\n  const dx = a.x - b.x, dy = a.y - b.y, dz = (a.z || 0) - (b.z || 0);\n  return Math.hypot(dx, dy, dz);\n}\n\nfunction fingerOpen(lm, tip, pip, mcp) {\n  const wrist = lm[0];\n  const dTip = dist(lm[tip], wrist);\n  const dPip = dist(lm[pip], wrist);\n  const dMcp = dist(lm[mcp], wrist);\n  const linear = dTip / (dPip + 1e-6);\n  const radial = dTip / (dMcp + 1e-6);\n  const image = (lm[pip].y - lm[tip].y) / (dist(lm[mcp], lm[pip]) + 1e-6);\n  const score = 0.45 * (linear - 1) + 0.25 * (radial - 1.15) + 0.3 * image;\n  return { open: score > 0.12, margin: score };\n}\n\nfunction thumbOpen(lm) {\n  const palm = dist(lm[0], lm[9]) || 1;\n  const spread = dist(lm[4], lm[5]) / palm;\n  const reach = dist(lm[4], lm[17]) / palm;\n  const score = 0.8 * (spread - 0.7) + 0.2 * (reach - 0.9);\n  return { open: score > 0, margin: score };\n}\n\n/** Classify 21 landmarks. Returns gesture id or null. */\nexport function classify(lm) {\n  if (!lm || lm.length < 21) return null;\n  const thumb = thumbOpen(lm);\n  const index = fingerOpen(lm, 8, 6, 5);\n  const middle = fingerOpen(lm, 12, 10, 9);\n  const ring = fingerOpen(lm, 16, 14, 13);\n  const pinky = fingerOpen(lm, 20, 18, 17);\n  const { open: t, margin: tm } = thumb;\n  const { open: i, margin: im } = index;\n  const { open: m, margin: mm } = middle;\n  const { open: r, margin: rm } = ring;\n  const { open: p, margin: pm } = pinky;\n\n  const hits = [];\n  if (t && i && !m && !r && !p) hits.push([\"LIGHTS_ON\", (tm + im - mm - rm - pm) / 5]);\n  if (!i && !m && !r && !p && !t) hits.push([\"LIGHTS_OFF\", (-im - mm - rm - pm - tm) / 5]);\n  if (!i && m && r && p) hits.push([\"FAN_ON\", (-im + mm + rm + pm) / 4]);\n  if (i && m && !r && !p && !t) hits.push([\"FAN_OFF\", (im + mm - rm - pm - tm) / 5]);\n  if (i && m && r && !p && !t) hits.push([\"AUX\", (im + mm + rm - pm - tm) / 5]); // W\n\n  if (!hits.length) return null;\n  hits.sort((a, b) => b[1] - a[1]);\n  return hits[0][0];\n}\n\nexport function serialByte(id) {\n  return GESTURES[id]?.serial ?? null;\n}\n"
+	},
+	{
+		id: "java",
+		label: "Java",
+		ext: "SignHome.java",
+		source: "/**\n * SignHome — ASL letters L, A, F, V, W mapped to Arduino Uno R3 pins.\n *\n * Geometry classifier twin of the browser pipeline. 21 MediaPipe Hands\n * landmarks, signer view, palm toward the camera.\n */\npublic final class SignHome {\n\n  public enum Gesture {\n    LIGHTS_ON(\"L\", '1', \"D2\", \"on\"),\n    LIGHTS_OFF(\"A\", '2', \"D2\", \"off\"),\n    FAN_ON(\"F\", '3', \"D3\", \"on\"),\n    FAN_OFF(\"V\", '4', \"D3\", \"off\"),\n    AUX(\"W\", '5', \"D4\", \"toggle\");\n\n    public final String asl;\n    public final char serial;\n    public final String pin;\n    public final String action;\n\n    Gesture(String asl, char serial, String pin, String action) {\n      this.asl = asl;\n      this.serial = serial;\n      this.pin = pin;\n      this.action = action;\n    }\n  }\n\n  public static final class Landmark {\n    public final double x, y, z;\n\n    public Landmark(double x, double y, double z) {\n      this.x = x;\n      this.y = y;\n      this.z = z;\n    }\n  }\n\n  private static double dist(Landmark a, Landmark b) {\n    double dx = a.x - b.x, dy = a.y - b.y, dz = a.z - b.z;\n    return Math.sqrt(dx * dx + dy * dy + dz * dz);\n  }\n\n  private static double[] finger(Landmark[] lm, int tip, int pip, int mcp) {\n    Landmark wrist = lm[0];\n    double dTip = dist(lm[tip], wrist);\n    double dPip = dist(lm[pip], wrist);\n    double dMcp = dist(lm[mcp], wrist);\n    double linear = dTip / (dPip + 1e-6);\n    double radial = dTip / (dMcp + 1e-6);\n    double image = (lm[pip].y - lm[tip].y) / (dist(lm[mcp], lm[pip]) + 1e-6);\n    double score = 0.45 * (linear - 1) + 0.25 * (radial - 1.15) + 0.3 * image;\n    return new double[] {score > 0.12 ? 1 : 0, score};\n  }\n\n  private static double[] thumb(Landmark[] lm) {\n    double palm = dist(lm[0], lm[9]);\n    if (palm == 0) palm = 1;\n    double spread = dist(lm[4], lm[5]) / palm;\n    double reach = dist(lm[4], lm[17]) / palm;\n    double score = 0.8 * (spread - 0.7) + 0.2 * (reach - 0.9);\n    return new double[] {score > 0 ? 1 : 0, score};\n  }\n\n  /** Classify 21 landmarks into L / A / F / V / W, or null. */\n  public static Gesture classify(Landmark[] lm) {\n    if (lm == null || lm.length < 21) return null;\n    double[] th = thumb(lm);\n    double[] ix = finger(lm, 8, 6, 5);\n    double[] md = finger(lm, 12, 10, 9);\n    double[] rg = finger(lm, 16, 14, 13);\n    double[] pk = finger(lm, 20, 18, 17);\n    boolean t = th[0] == 1, i = ix[0] == 1, m = md[0] == 1, r = rg[0] == 1, p = pk[0] == 1;\n\n    Gesture best = null;\n    double bestScore = Double.NEGATIVE_INFINITY;\n\n    if (t && i && !m && !r && !p) {\n      double s = (th[1] + ix[1] - md[1] - rg[1] - pk[1]) / 5;\n      if (s > bestScore) { bestScore = s; best = Gesture.LIGHTS_ON; }\n    }\n    if (!i && !m && !r && !p && !t) {\n      double s = (-ix[1] - md[1] - rg[1] - pk[1] - th[1]) / 5;\n      if (s > bestScore) { bestScore = s; best = Gesture.LIGHTS_OFF; }\n    }\n    if (!i && m && r && p) {\n      double s = (-ix[1] + md[1] + rg[1] + pk[1]) / 4;\n      if (s > bestScore) { bestScore = s; best = Gesture.FAN_ON; }\n    }\n    if (i && m && !r && !p && !t) {\n      double s = (ix[1] + md[1] - rg[1] - pk[1] - th[1]) / 5;\n      if (s > bestScore) { bestScore = s; best = Gesture.FAN_OFF; }\n    }\n    if (i && m && r && !p && !t) { // W\n      double s = (ix[1] + md[1] + rg[1] - pk[1] - th[1]) / 5;\n      if (s > bestScore) { bestScore = s; best = Gesture.AUX; }\n    }\n    return best;\n  }\n\n  public static void main(String[] args) {\n    System.out.println(\"SignHome letters: L A F V W\");\n    for (Gesture g : Gesture.values()) {\n      System.out.printf(\"%s  serial=%c  pin=%s  %s%n\", g.asl, g.serial, g.pin, g.action);\n    }\n  }\n}\n"
+	},
+	{
+		id: "css",
+		label: "CSS",
+		ext: "signhome.css",
+		source: "/* SignHome — standalone theme (HTML/CSS twin of the control center). */\n:root {\n  --bg: #09090b;\n  --surface: #111113;\n  --fg: #ececef;\n  --muted: #9a9aa3;\n  --border: #26262c;\n  --accent: #7c8cff;\n  --sage: #7dba8a;\n  --lamp: #e8c36a;\n  --font: \"IBM Plex Sans\", system-ui, sans-serif;\n  --mono: \"IBM Plex Mono\", ui-monospace, monospace;\n}\n\n* { box-sizing: border-box; }\n\nhtml, body {\n  margin: 0;\n  background: var(--bg);\n  color: var(--fg);\n  font-family: var(--font);\n}\n\n.letters {\n  display: grid;\n  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));\n  gap: 12px;\n  padding: 24px;\n  max-width: 920px;\n  margin: 0 auto;\n}\n\n.card {\n  border: 1px solid var(--border);\n  background: var(--surface);\n  border-radius: 12px;\n  padding: 16px;\n}\n\n.card h2 {\n  margin: 0 0 4px;\n  font-size: 1.5rem;\n  font-weight: 500;\n}\n\n.card p {\n  margin: 0;\n  color: var(--muted);\n  font-size: 0.85rem;\n}\n\n.card .pin {\n  font-family: var(--mono);\n  color: var(--accent);\n  font-size: 0.75rem;\n  margin-top: 8px;\n}\n\n.card[data-asl=\"L\"] .pin { color: var(--lamp); }\n.card[data-asl=\"W\"] { outline: 1px solid color-mix(in srgb, var(--accent) 40%, transparent); }\n"
+	},
+	{
+		id: "html",
+		label: "HTML",
+		ext: "index.html",
+		source: "<!DOCTYPE html>\n<html lang=\"en\">\n  <head>\n    <meta charset=\"utf-8\" />\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\" />\n    <title>SignHome — L A F V W</title>\n    <link rel=\"stylesheet\" href=\"../css/signhome.css\" />\n  </head>\n  <body>\n    <header style=\"padding: 24px 24px 0; max-width: 920px; margin: 0 auto\">\n      <p style=\"letter-spacing: 0.18em; text-transform: uppercase; font-size: 11px; color: var(--muted); margin: 0\">\n        ASL control\n      </p>\n      <h1 style=\"margin: 8px 0 0; font-weight: 500\">Five static letters</h1>\n      <p style=\"color: var(--muted); max-width: 36rem\">\n        L, A, F, V, W map onto virtual relays D2 / D3 / D4. Same serial bytes the\n        Arduino Uno R3 firmware expects at 9600 baud.\n      </p>\n    </header>\n    <section class=\"letters\">\n      <article class=\"card\" data-asl=\"L\">\n        <h2>L</h2>\n        <p>Lights On</p>\n        <p class=\"pin\">serial 1 · D2</p>\n      </article>\n      <article class=\"card\" data-asl=\"A\">\n        <h2>A</h2>\n        <p>Lights Off</p>\n        <p class=\"pin\">serial 2 · D2</p>\n      </article>\n      <article class=\"card\" data-asl=\"F\">\n        <h2>F</h2>\n        <p>Fan On</p>\n        <p class=\"pin\">serial 3 · D3</p>\n      </article>\n      <article class=\"card\" data-asl=\"V\">\n        <h2>V</h2>\n        <p>Fan Off</p>\n        <p class=\"pin\">serial 4 · D3</p>\n      </article>\n      <article class=\"card\" data-asl=\"W\">\n        <h2>W</h2>\n        <p>Speaker Toggle</p>\n        <p class=\"pin\">serial 5 · D4</p>\n      </article>\n    </section>\n  </body>\n</html>\n"
+	}
+];
+function Languages() {
+	const [active, setActive] = (0, import_react.useState)("python");
+	const file = FILES.find((f) => f.id === active) ?? FILES[0];
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("main", {
+		className: "mx-auto w-full min-w-0 max-w-5xl px-4 py-8 sm:px-6",
+		children: [
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
+				className: "text-[11px] font-medium uppercase tracking-[0.18em] text-subtle",
+				children: "Thesis sources"
+			}),
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)("h1", {
+				className: "mt-2 text-3xl font-medium tracking-tight text-fg",
+				children: "Five languages, one pipeline"
+			}),
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
+				className: "mt-3 max-w-2xl text-base leading-relaxed text-muted",
+				children: "The live control center stays in the browser. These files are the same L, A, F, V, W classifier and serial map in Python, JavaScript, Java, CSS, and HTML."
+			}),
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
+				className: "mt-6 flex min-w-0 flex-wrap gap-1 rounded-md border border-border bg-surface p-1",
+				children: FILES.map((f) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", {
+					type: "button",
+					onClick: () => setActive(f.id),
+					className: cn("rounded-sm px-3 py-1.5 text-sm transition-colors duration-150", active === f.id ? "bg-surface-2 text-fg" : "text-muted hover:text-fg"),
+					children: f.label
+				}, f.id))
+			}),
+			/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("section", {
+				className: "mt-4 overflow-hidden rounded-xl border border-border bg-surface shadow-panel",
+				children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("header", {
+					className: "flex items-center justify-between border-b border-border px-4 py-2",
+					children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
+						className: "font-mono text-xs text-muted",
+						children: file.ext
+					}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
+						className: "text-[11px] uppercase tracking-widest text-subtle",
+						children: file.label
+					})]
+				}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("pre", {
+					className: "max-h-[70vh] overflow-auto p-4 font-mono text-[12px] leading-relaxed text-fg",
+					children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("code", { children: file.source })
+				})]
+			})
+		]
+	});
+}
+//#endregion
+export { Languages as component };

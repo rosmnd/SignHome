@@ -1,0 +1,843 @@
+import { i as __toESM } from "../_runtime.mjs";
+import { t as cn } from "./utils-C_uf36nf.mjs";
+import { o as require_jsx_runtime, s as require_react } from "../_libs/@radix-ui/react-collection+[...].mjs";
+import { a as GESTURE_IDS, f as dist, h as extractFeatures, i as GESTURES, l as POSES, n as Button, p as dist2, t as APPLIANCES } from "./hand-poses-DXTghskj.mjs";
+import { _ as lazyRouteComponent, b as Link, d as Scripts, f as HeadContent, g as Outlet, h as createRouter, p as useRouterState, v as createFileRoute, y as createRootRoute } from "../_libs/@tanstack/react-router+[...].mjs";
+import { i as Sun, o as Moon, r as TriangleAlert } from "../_libs/lucide-react.mjs";
+import { n as create, t as persist } from "../_libs/zustand.mjs";
+//#region node_modules/.nitro/vite/services/ssr/assets/router-vh-nNUrO.js
+var import_react = /* @__PURE__ */ __toESM(require_react());
+var import_jsx_runtime = require_jsx_runtime();
+var __defProp = Object.defineProperty;
+var __exportAll = (all, no_symbols) => {
+	let target = {};
+	for (var name in all) __defProp(target, name, {
+		get: all[name],
+		enumerable: true
+	});
+	if (!no_symbols) __defProp(target, Symbol.toStringTag, { value: "Module" });
+	return target;
+};
+var FALLBACK_MESSAGE = "An unexpected error occurred. Try reloading the page.";
+function errorMessage(error) {
+	if (error instanceof Error && error.message) return error.message;
+	if (typeof error === "string" && error) return error;
+	return FALLBACK_MESSAGE;
+}
+function AppErrorComponent({ error }) {
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("main", {
+		className: "flex min-h-screen flex-col items-center justify-center gap-3 px-6 text-center bg-zinc-50 text-zinc-900 dark:bg-zinc-950 dark:text-zinc-50",
+		children: [
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
+				className: "text-red-500",
+				"aria-hidden": "true",
+				children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(TriangleAlert, {
+					className: "size-10",
+					strokeWidth: 2
+				})
+			}),
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)("h1", {
+				className: "text-lg font-semibold",
+				children: "Something went wrong"
+			}),
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
+				className: "max-w-md text-sm break-words text-zinc-500 dark:text-zinc-400",
+				children: errorMessage(error)
+			})
+		]
+	});
+}
+function Badge({ className, tone = "muted", children }) {
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
+		className: cn("inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium tracking-wide", tone === "muted" && "bg-surface-2 text-muted", tone === "on" && "bg-sage/20 text-sage", tone === "off" && "bg-surface-2 text-subtle", tone === "live" && "bg-sage/15 text-sage", tone === "accent" && "bg-accent/15 text-accent", className),
+		children
+	});
+}
+var THEME_KEY = "signhome.theme";
+var THEME_BOOT = `(function(){try{var k=${JSON.stringify(THEME_KEY)};var t=localStorage.getItem(k)||"dark";if(t!=="light"&&t!=="dark")t="dark";var e=document.documentElement;e.setAttribute("data-theme",t);e.style.colorScheme=t;}catch(e){document.documentElement.setAttribute("data-theme","dark");}})();`;
+function readThemePref() {
+	try {
+		const v = localStorage.getItem(THEME_KEY);
+		if (v === "light" || v === "dark") return v;
+		if (v === "system" && typeof window !== "undefined") return window.matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark";
+	} catch {}
+	return "dark";
+}
+function applyTheme(pref) {
+	const el = document.documentElement;
+	el.dataset.theme = pref;
+	el.style.colorScheme = pref;
+	const meta = document.querySelector("meta[name=\"theme-color\"]");
+	if (meta) meta.setAttribute("content", pref === "light" ? "#f3efe6" : "#09090b");
+	try {
+		localStorage.setItem(THEME_KEY, pref);
+	} catch {}
+	return pref;
+}
+function nextTheme(pref) {
+	return pref === "dark" ? "light" : "dark";
+}
+function ThemeToggle() {
+	const [pref, setPref] = (0, import_react.useState)(null);
+	(0, import_react.useEffect)(() => {
+		const initial = readThemePref();
+		setPref(initial);
+		applyTheme(initial);
+	}, []);
+	function toggle() {
+		if (!pref) return;
+		const n = nextTheme(pref);
+		setPref(n);
+		applyTheme(n);
+	}
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Button, {
+		type: "button",
+		variant: "ghost",
+		size: "icon",
+		className: "size-9 shrink-0",
+		onClick: toggle,
+		"aria-label": pref === "light" ? "Switch to dark mode" : "Switch to light mode",
+		title: pref === "light" ? "Light · click for dark" : "Dark · click for light",
+		children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(pref === "light" ? Sun : Moon, {
+			className: "size-4",
+			strokeWidth: 1.75
+		})
+	});
+}
+var listeners = /* @__PURE__ */ new Set();
+function emit() {
+	for (const fn of listeners) fn();
+}
+function subscribeSerial(fn) {
+	listeners.add(fn);
+	return () => listeners.delete(fn);
+}
+var status = typeof navigator !== "undefined" && "serial" in navigator ? "idle" : "unsupported";
+var portName = "";
+var lastError = "";
+var port = null;
+var writer = null;
+var closing = false;
+function getSerialState() {
+	return {
+		status,
+		portName,
+		lastError
+	};
+}
+function setStatus(next, err = "") {
+	status = next;
+	lastError = err;
+	emit();
+}
+function labelFor(p) {
+	const info = p.getInfo?.() ?? {};
+	if (info.usbVendorId === 9025) return "Arduino Uno R3";
+	if (info.usbVendorId === 6790) return "CH340 · Uno clone";
+	if (info.usbVendorId === 1027) return "FTDI adapter";
+	if (info.usbVendorId) return `USB ${info.usbVendorId.toString(16)}`;
+	return "COM port";
+}
+async function pumpReader(p) {
+	if (!p.readable) return;
+	const reader = p.readable.getReader();
+	const decoder = new TextDecoder();
+	try {
+		while (!closing) {
+			const { value, done } = await reader.read();
+			if (done) break;
+			if (value) decoder.decode(value);
+		}
+	} catch {} finally {
+		try {
+			reader.releaseLock();
+		} catch {}
+	}
+}
+async function connectArduino() {
+	const nav = navigator;
+	if (!nav.serial) {
+		setStatus("unsupported", "This browser cannot open USB serial. Use Chrome or Edge on a computer.");
+		return false;
+	}
+	setStatus("picking");
+	try {
+		const next = await nav.serial.requestPort();
+		await next.open({ baudRate: 9600 });
+		port = next;
+		writer = next.writable?.getWriter() ?? null;
+		portName = labelFor(next);
+		closing = false;
+		next.addEventListener("disconnect", () => {
+			disconnectArduino();
+			setStatus("idle", "USB unplugged.");
+		});
+		pumpReader(next);
+		setStatus("connected");
+		return true;
+	} catch (err) {
+		const msg = err instanceof Error ? err.message : "Serial request failed.";
+		if (/not allowed|permissions policy|securityerror|notsupported/i.test(msg) || err instanceof DOMException && (err.name === "SecurityError" || err.name === "NotSupportedError")) setStatus("error", "USB serial is blocked inside the preview frame. Open the published app in Chrome, plug in the Uno R3, then Connect.");
+		else if (/cancel|notfound/i.test(msg) || err instanceof DOMException && err.name === "NotFoundError") setStatus("idle", "Picker closed.");
+		else setStatus("error", msg);
+		return false;
+	}
+}
+async function disconnectArduino() {
+	closing = true;
+	try {
+		writer?.releaseLock();
+	} catch {}
+	writer = null;
+	try {
+		await port?.close();
+	} catch {}
+	port = null;
+	portName = "";
+	if (status !== "unsupported") setStatus("idle");
+}
+async function writeCommand(ch) {
+	if (!writer || status !== "connected") return "no-port";
+	try {
+		await writer.write(new TextEncoder().encode(ch));
+		return "ok";
+	} catch {
+		return "error";
+	}
+}
+function mulberry32(seed) {
+	let a = seed >>> 0;
+	return () => {
+		a = a + 1831565813 >>> 0;
+		let t = a;
+		t = Math.imul(t ^ t >>> 15, t | 1);
+		t ^= t + Math.imul(t ^ t >>> 7, t | 61);
+		return ((t ^ t >>> 14) >>> 0) / 4294967296;
+	};
+}
+function jitterPose(lm, rng) {
+	const s = .9 + rng() * .2;
+	const ox = (rng() - .5) * .1;
+	const oy = (rng() - .5) * .1;
+	const ang = (rng() - .5) * .28;
+	const c = Math.cos(ang);
+	const sA = Math.sin(ang);
+	const cx = lm[0].x;
+	const cy = lm[0].y;
+	const flip = rng() > .5 ? 1 : -1;
+	return lm.map((p) => {
+		const x0 = (p.x - cx) * flip;
+		const y0 = p.y - cy;
+		return {
+			x: cx + ox + s * (x0 * c - y0 * sA) + (rng() - .5) * .014,
+			y: cy + oy + s * (x0 * sA + y0 * c) + (rng() - .5) * .014,
+			z: p.z + (rng() - .5) * .05
+		};
+	});
+}
+function syntheticSet(perClass = 90, seed = 2026) {
+	const rng = mulberry32(seed);
+	const rows = [];
+	for (const y of GESTURE_IDS) {
+		const base = POSES[y];
+		for (let i = 0; i < perClass; i++) rows.push({
+			x: extractFeatures(jitterPose(base, rng)),
+			y
+		});
+	}
+	return rows;
+}
+function counts(rows) {
+	const c = emptyCounts();
+	for (const r of rows) c[r.y] += 1;
+	return c;
+}
+function emptyCounts() {
+	return {
+		LIGHTS_ON: 0,
+		LIGHTS_OFF: 0,
+		FAN_ON: 0,
+		FAN_OFF: 0,
+		AUX: 0
+	};
+}
+function gini(c, n) {
+	if (n <= 0) return 0;
+	let s = 1;
+	for (const y of GESTURE_IDS) {
+		const p = c[y] / n;
+		s -= p * p;
+	}
+	return s;
+}
+function majority(rows) {
+	const c = counts(rows);
+	let best = rows[0]?.y ?? "LIGHTS_ON";
+	let n = 0;
+	for (const y of GESTURE_IDS) if (c[y] > n) {
+		n = c[y];
+		best = y;
+	}
+	return {
+		label: best,
+		conf: rows.length ? n / rows.length : 0
+	};
+}
+function pickFeatures(nFeatures, k, rng) {
+	const idx = Array.from({ length: nFeatures }, (_, i) => i);
+	for (let i = nFeatures - 1; i > 0; i--) {
+		const j = Math.floor(rng() * (i + 1));
+		const t = idx[i];
+		idx[i] = idx[j];
+		idx[j] = t;
+	}
+	return idx.slice(0, k);
+}
+function grow(rows, depth, rng, nFeatures) {
+	const maj = majority(rows);
+	if (depth <= 0 || rows.length < 8 || maj.conf > .97) return {
+		leaf: true,
+		label: maj.label,
+		conf: maj.conf
+	};
+	const feats = pickFeatures(nFeatures, Math.max(4, Math.floor(Math.sqrt(nFeatures))), rng);
+	const parentG = gini(counts(rows), rows.length);
+	let bestGain = 0;
+	let bestFeat = 0;
+	let bestThr = 0;
+	let bestLeft = [];
+	let bestRight = [];
+	for (const f of feats) {
+		const vals = rows.map((r) => r.x[f] ?? 0);
+		const lo = Math.min(...vals);
+		const hi = Math.max(...vals);
+		if (hi - lo < 1e-6) continue;
+		for (let t = 1; t <= 8; t++) {
+			const thr = lo + (hi - lo) * t / 9;
+			const left = [];
+			const right = [];
+			for (const r of rows) if ((r.x[f] ?? 0) <= thr) left.push(r);
+			else right.push(r);
+			if (left.length < 3 || right.length < 3) continue;
+			const gain = parentG - left.length / rows.length * gini(counts(left), left.length) - right.length / rows.length * gini(counts(right), right.length);
+			if (gain > bestGain) {
+				bestGain = gain;
+				bestFeat = f;
+				bestThr = thr;
+				bestLeft = left;
+				bestRight = right;
+			}
+		}
+	}
+	if (bestGain < 1e-4 || bestLeft.length === 0) return {
+		leaf: true,
+		label: maj.label,
+		conf: maj.conf
+	};
+	return {
+		leaf: false,
+		feat: bestFeat,
+		thr: bestThr,
+		left: grow(bestLeft, depth - 1, rng, nFeatures),
+		right: grow(bestRight, depth - 1, rng, nFeatures)
+	};
+}
+function walk(node, x) {
+	if (node.leaf) return node.label;
+	return (x[node.feat] ?? 0) <= node.thr ? walk(node.left, x) : walk(node.right, x);
+}
+function trainForest(extra = [], opts) {
+	const nTrees = opts?.trees ?? 40;
+	const seed = opts?.seed ?? 2026;
+	const rng = mulberry32(seed);
+	const base = syntheticSet(90, seed);
+	const data = extra.length ? base.concat(extra) : base;
+	const nFeatures = data[0]?.x.length ?? 63;
+	const trees = [];
+	for (let t = 0; t < nTrees; t++) {
+		const bag = [];
+		for (let i = 0; i < data.length; i++) bag.push(data[Math.floor(rng() * data.length)]);
+		trees.push(grow(bag, 8, rng, nFeatures));
+	}
+	return {
+		trees,
+		nTrees,
+		nSamples: data.length,
+		nFeatures
+	};
+}
+function predictForest(forest, x) {
+	const c = emptyCounts();
+	for (const tree of forest.trees) c[walk(tree, x)] += 1;
+	let best = "LIGHTS_ON";
+	let n = -1;
+	for (const y of GESTURE_IDS) if (c[y] > n) {
+		n = c[y];
+		best = y;
+	}
+	const vote = n / Math.max(1, forest.trees.length);
+	const second = GESTURE_IDS.reduce((m, y) => y === best ? m : Math.max(m, c[y]), 0);
+	const margin = (n - second) / Math.max(1, forest.trees.length);
+	return {
+		gesture: best,
+		confidence: Math.max(0, Math.min(1, .55 * vote + .45 * margin))
+	};
+}
+var active = trainForest();
+function getForest() {
+	return active;
+}
+function retrainForest(user) {
+	const extra = [];
+	for (const y of GESTURE_IDS) for (const x of user[y] ?? []) extra.push({
+		x,
+		y
+	}, {
+		x,
+		y
+	}, {
+		x,
+		y
+	});
+	active = trainForest(extra, {
+		seed: 2026 + extra.length,
+		trees: 40
+	});
+	return active;
+}
+function resetForest() {
+	active = trainForest();
+	return active;
+}
+function clamp01(n) {
+	return Math.max(0, Math.min(1, n));
+}
+function fingerOpen(lm, tip, pip, mcp) {
+	const wrist = lm[0];
+	const dTip = dist(lm[tip], wrist);
+	const dPip = dist(lm[pip], wrist);
+	const dMcp = dist(lm[mcp], wrist);
+	const linear = dTip / (dPip + 1e-6);
+	const radial = dTip / (dMcp + 1e-6);
+	const image = (lm[pip].y - lm[tip].y) / (dist2(lm[mcp], lm[pip]) + 1e-6);
+	const score = .45 * (linear - 1) + .25 * (radial - 1.15) + .3 * image;
+	return {
+		open: score > .12,
+		margin: score
+	};
+}
+function thumbOpen(lm) {
+	const palm = dist(lm[0], lm[9]) || 1;
+	const spread = dist(lm[4], lm[5]) / palm;
+	const reach = dist(lm[4], lm[17]) / palm;
+	const score = .8 * (spread - .7) + .2 * (reach - .9);
+	return {
+		open: score > 0,
+		margin: score
+	};
+}
+function readFingers(lm) {
+	const thumb = thumbOpen(lm);
+	const index = fingerOpen(lm, 8, 6, 5);
+	const middle = fingerOpen(lm, 12, 10, 9);
+	const ring = fingerOpen(lm, 16, 14, 13);
+	const pinky = fingerOpen(lm, 20, 18, 17);
+	return {
+		thumb: thumb.open,
+		index: index.open,
+		middle: middle.open,
+		ring: ring.open,
+		pinky: pinky.open,
+		margins: {
+			thumb: thumb.margin,
+			index: index.margin,
+			middle: middle.margin,
+			ring: ring.margin,
+			pinky: pinky.margin
+		}
+	};
+}
+function matchGeometry(f) {
+	const { thumb, index, middle, ring, pinky, margins } = f;
+	const hits = [
+		{
+			id: "LIGHTS_ON",
+			ok: thumb && index && !middle && !ring && !pinky,
+			score: (margins.thumb + margins.index - margins.middle - margins.ring - margins.pinky) / 5
+		},
+		{
+			id: "LIGHTS_OFF",
+			ok: !index && !middle && !ring && !pinky && !thumb,
+			score: (-margins.index - margins.middle - margins.ring - margins.pinky - margins.thumb) / 5
+		},
+		{
+			id: "FAN_ON",
+			ok: !index && middle && ring && pinky,
+			score: (-margins.index + margins.middle + margins.ring + margins.pinky) / 4
+		},
+		{
+			id: "FAN_OFF",
+			ok: index && middle && !ring && !pinky && !thumb,
+			score: (margins.index + margins.middle - margins.ring - margins.pinky - margins.thumb) / 5
+		},
+		{
+			id: "AUX",
+			ok: index && middle && ring && !pinky && !thumb,
+			score: (margins.index + margins.middle + margins.ring - margins.pinky - margins.thumb) / 5
+		}
+	].filter((c) => c.ok);
+	if (hits.length === 0) return null;
+	hits.sort((a, b) => b.score - a.score);
+	const best = hits[0];
+	return {
+		gesture: best.id,
+		score: best.score
+	};
+}
+function classifyHand(lm, _samples, _preferTrained) {
+	const fingers = readFingers(lm);
+	const features = extractFeatures(lm);
+	const rf = predictForest(getForest(), features);
+	if (rf.confidence >= .42) return {
+		gesture: rf.gesture,
+		confidence: clamp01(rf.confidence),
+		fingers,
+		source: "rf"
+	};
+	const geo = matchGeometry(fingers);
+	if (geo && geo.score > .08) return {
+		gesture: geo.gesture,
+		confidence: clamp01(.5 + .7 * geo.score),
+		fingers,
+		source: "geometry"
+	};
+	if (rf.confidence >= .28) return {
+		gesture: rf.gesture,
+		confidence: clamp01(rf.confidence),
+		fingers,
+		source: "rf"
+	};
+	return {
+		gesture: null,
+		confidence: rf.confidence,
+		fingers,
+		source: "none"
+	};
+}
+function sampleCount(samples) {
+	return GESTURE_IDS.reduce((n, g) => n + (samples[g]?.length ?? 0), 0);
+}
+function emptySamples() {
+	return {
+		LIGHTS_ON: [],
+		LIGHTS_OFF: [],
+		FAN_ON: [],
+		FAN_OFF: [],
+		AUX: []
+	};
+}
+var seq = 0;
+function nid() {
+	seq += 1;
+	return `${Date.now().toString(36)}-${seq}`;
+}
+var MAX_LOGS = 80;
+function serialLine(g, nextOn) {
+	const def = GESTURES[g];
+	const pinLevel = nextOn ? "HIGH" : "LOW";
+	const verb = def.action === "toggle" ? nextOn ? "ON" : "OFF" : def.action.toUpperCase();
+	const usb = getSerialState().status === "connected";
+	return {
+		message: `TX  '${def.serial}'  →  ${def.pin} ${pinLevel}  ${APPLIANCES[def.appliance].name} ${verb}`,
+		meta: usb ? `9600 baud · Uno R3 · USB` : `9600 baud · Uno R3 · virtual`
+	};
+}
+function pushByte(ch) {
+	writeCommand(ch);
+}
+var useAppStore = create()(persist((set, get) => ({
+	light: false,
+	fan: false,
+	aux: false,
+	confidenceMin: .68,
+	holdMs: 520,
+	cameraStatus: "idle",
+	cameraHint: "",
+	detected: {
+		gesture: null,
+		confidence: 0,
+		source: "none",
+		holdMs: 0
+	},
+	logs: [],
+	samples: emptySamples(),
+	useTrained: false,
+	lastFiredAt: 0,
+	lastFired: null,
+	calibrating: null,
+	fps: 0,
+	setCameraStatus: (s, hint = "") => set({
+		cameraStatus: s,
+		cameraHint: hint
+	}),
+	setDetected: (d) => set({ detected: d }),
+	setFps: (n) => set({ fps: n }),
+	setConfidenceMin: (n) => set({ confidenceMin: n }),
+	setHoldMs: (n) => set({ holdMs: n }),
+	setCalibrating: (g) => set({ calibrating: g }),
+	setUseTrained: (v) => {
+		set({ useTrained: v });
+		get().addLog("system", v ? "Retraining Random Forest with your samples." : "Using base Random Forest (63 features).");
+		if (v) retrainForest(get().samples);
+		else resetForest();
+	},
+	addLog: (kind, message, meta) => set((st) => ({ logs: [{
+		id: nid(),
+		ts: Date.now(),
+		kind,
+		message,
+		meta
+	}, ...st.logs].slice(0, MAX_LOGS) })),
+	clearLogs: () => set({ logs: [{
+		id: nid(),
+		ts: Date.now(),
+		kind: "system",
+		message: "Log cleared."
+	}] }),
+	addSamples: (g, vectors) => set((st) => {
+		return { samples: {
+			...st.samples,
+			[g]: [...st.samples[g], ...vectors].slice(-120)
+		} };
+	}),
+	clearSamples: () => {
+		set({
+			samples: emptySamples(),
+			useTrained: false
+		});
+		resetForest();
+		get().addLog("system", "Calibration samples discarded. Base Random Forest restored.");
+	},
+	applyGesture: (g, origin) => {
+		const st = get();
+		const now = Date.now();
+		if (now - st.lastFiredAt < 1400 && st.lastFired === g) return false;
+		const def = GESTURES[g];
+		const current = st[def.appliance];
+		let next = current;
+		if (def.action === "on") next = true;
+		else if (def.action === "off") next = false;
+		else next = !current;
+		if (def.action !== "toggle" && next === current) {
+			if (now - st.lastFiredAt < 2400) return false;
+			get().addLog("gesture", `${def.label} held — ${APPLIANCES[def.appliance].name} already ${current ? "ON" : "OFF"}.`);
+			set({
+				lastFiredAt: now,
+				lastFired: g
+			});
+			return false;
+		}
+		const line = serialLine(g, next);
+		set({
+			[def.appliance]: next,
+			lastFiredAt: now,
+			lastFired: g
+		});
+		get().addLog("gesture", `${origin === "camera" ? "Recognized" : "Manual"} ${def.pose}`);
+		get().addLog("serial", line.message, line.meta);
+		pushByte(def.serial);
+		return true;
+	},
+	setAppliance: (id, on) => {
+		if (get()[id] === on) return;
+		const pin = APPLIANCES[id].pin;
+		const serial = id === "light" ? on ? "1" : "2" : id === "fan" ? on ? "3" : "4" : "5";
+		const usb = getSerialState().status === "connected";
+		set({ [id]: on });
+		get().addLog("serial", `TX  '${serial}'  →  ${pin} ${on ? "HIGH" : "LOW"}  ${APPLIANCES[id].name} ${on ? "ON" : "OFF"}`, usb ? "manual · USB" : "manual override");
+		pushByte(serial);
+	}
+}), {
+	name: "signhome.v1",
+	skipHydration: true,
+	partialize: (s) => ({
+		confidenceMin: s.confidenceMin,
+		holdMs: s.holdMs,
+		samples: s.samples,
+		useTrained: s.useTrained
+	})
+}));
+var NAV = [{
+	to: "/",
+	label: "Control"
+}, {
+	to: "/guide",
+	label: "Guide"
+}];
+function AppHeader() {
+	const pathname = useRouterState({ select: (s) => s.location.pathname });
+	const cameraStatus = useAppStore((s) => s.cameraStatus);
+	const fps = useAppStore((s) => s.fps);
+	const [serial, setSerial] = (0, import_react.useState)(getSerialState);
+	(0, import_react.useEffect)(() => subscribeSerial(() => setSerial(getSerialState())), []);
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsx)("header", {
+		className: "sticky top-0 z-20 border-b border-border bg-bg/90 backdrop-blur-sm",
+		children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+			className: "mx-auto flex w-full min-w-0 max-w-7xl items-center gap-2 px-4 py-3 sm:justify-between sm:gap-3 sm:px-6",
+			children: [
+				/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Link, {
+					to: "/",
+					className: "min-w-0 shrink-0 no-underline",
+					children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
+						className: "text-lg font-semibold tracking-tight text-fg",
+						children: "SignHome"
+					}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
+						className: "ml-2 hidden text-xs uppercase tracking-widest text-subtle sm:inline",
+						children: "ASL control"
+					})]
+				}),
+				/* @__PURE__ */ (0, import_jsx_runtime.jsx)("nav", {
+					className: "mx-auto flex items-center gap-1 rounded-md border border-border bg-surface p-1",
+					children: NAV.map((item) => {
+						const active = pathname === item.to;
+						return /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Link, {
+							to: item.to,
+							className: cn("rounded-sm px-3 py-1.5 text-sm no-underline transition-colors duration-150", active ? "bg-surface-2 text-fg" : "text-muted hover:text-fg"),
+							children: item.label
+						}, item.to);
+					})
+				}),
+				/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+					className: "flex items-center gap-1 sm:gap-2",
+					children: [
+						serial.status === "connected" ? /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Badge, {
+							tone: "live",
+							className: "hidden sm:inline-flex",
+							children: [
+								/* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { className: "size-1.5 rounded-full bg-sage" }),
+								"Arduino · ",
+								serial.portName || "COM"
+							]
+						}) : /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Badge, {
+							tone: "muted",
+							className: "hidden md:inline-flex",
+							children: "Arduino offline"
+						}),
+						cameraStatus === "live" ? /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Badge, {
+							tone: "live",
+							className: "hidden sm:inline-flex",
+							children: [
+								/* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { className: "size-1.5 rounded-full bg-sage" }),
+								"Live",
+								fps > 0 ? ` · ${fps} fps` : ""
+							]
+						}) : /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Badge, {
+							tone: "muted",
+							className: "hidden sm:inline-flex",
+							children: "Offline camera"
+						}),
+						/* @__PURE__ */ (0, import_jsx_runtime.jsx)(ThemeToggle, {})
+					]
+				})
+			]
+		})
+	});
+}
+var styles_default = "/assets/styles-Capf_HuC.css";
+var APP_NAME = "SignHome";
+var Route$3 = createRootRoute({
+	head: () => ({
+		meta: [
+			{ charSet: "utf-8" },
+			{
+				name: "viewport",
+				content: "width=device-width, initial-scale=1"
+			},
+			{ title: APP_NAME },
+			{
+				name: "theme-color",
+				content: "#09090b"
+			},
+			{
+				name: "description",
+				content: "ASL home automation control center. MediaPipe Hands, five static signs, virtual relays — fully local."
+			}
+		],
+		links: [
+			{
+				rel: "icon",
+				type: "image/svg+xml",
+				href: "/favicon.svg"
+			},
+			{
+				rel: "stylesheet",
+				href: styles_default
+			},
+			{
+				rel: "manifest",
+				href: "/manifest.webmanifest"
+			},
+			{
+				rel: "preconnect",
+				href: "https://fonts.googleapis.com"
+			},
+			{
+				rel: "preconnect",
+				href: "https://fonts.gstatic.com"
+			},
+			{
+				rel: "stylesheet",
+				href: "https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap"
+			}
+		]
+	}),
+	component: Root
+});
+function Root() {
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("html", {
+		lang: "en",
+		className: "antialiased",
+		suppressHydrationWarning: true,
+		children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("head", { children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(HeadContent, {}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("script", { dangerouslySetInnerHTML: { __html: THEME_BOOT } })] }), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("body", {
+			className: "min-h-dvh bg-bg text-fg",
+			children: [
+				/* @__PURE__ */ (0, import_jsx_runtime.jsx)(AppHeader, {}),
+				/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Outlet, {}),
+				/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Scripts, {})
+			]
+		})]
+	});
+}
+var $$splitComponentImporter$2 = () => import("./routes-CCiqQZh7.mjs");
+var Route$2 = createFileRoute("/")({ component: lazyRouteComponent($$splitComponentImporter$2, "component") });
+var $$splitComponentImporter$1 = () => import("./guide-BO51YFDt.mjs");
+var Route$1 = createFileRoute("/guide")({ component: lazyRouteComponent($$splitComponentImporter$1, "component") });
+var $$splitComponentImporter = () => import("./languages-Da2PEYS8.mjs");
+var Route = createFileRoute("/languages")({ component: lazyRouteComponent($$splitComponentImporter, "component") });
+var rootRouteChildren = {
+	IndexRoute: Route$2.update({
+		id: "/",
+		path: "/",
+		getParentRoute: () => Route$3
+	}),
+	GuideRoute: Route$1.update({
+		id: "/guide",
+		path: "/guide",
+		getParentRoute: () => Route$3
+	}),
+	LanguagesRoute: Route.update({
+		id: "/languages",
+		path: "/languages",
+		getParentRoute: () => Route$3
+	})
+};
+var routeTree = Route$3._addFileChildren(rootRouteChildren)._addFileTypes();
+var router_exports = /* @__PURE__ */ __exportAll({ getRouter: () => getRouter });
+function getRouter() {
+	return createRouter({
+		routeTree,
+		defaultErrorComponent: AppErrorComponent
+	});
+}
+//#endregion
+export { retrainForest as a, getSerialState as c, sampleCount as i, subscribeSerial as l, useAppStore as n, connectArduino as o, classifyHand as r, disconnectArduino as s, router_exports as t };

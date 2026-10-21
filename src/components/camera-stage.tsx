@@ -108,9 +108,9 @@ function IdleHand() {
     const morph = 700;
     const cycle = dwell + morph;
     const tick = (now: number) => {
-      const t = (now - start) % (cycle * POSE_ORDER.length);
-      const i = Math.floor(t / cycle);
-      const local = t - i * cycle;
+      const elapsed = Math.max(0, now - start);
+      const i = Math.floor(elapsed / cycle) % POSE_ORDER.length;
+      const local = elapsed % cycle;
       const a = POSE_ORDER[i]!;
       const b = POSE_ORDER[(i + 1) % POSE_ORDER.length]!;
       if (local < dwell) {
