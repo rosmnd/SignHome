@@ -20,10 +20,13 @@ export function ControlCenter() {
   const live = useAppStore((s) => s.cameraStatus === "live");
 
   useEffect(() => {
-    void useAppStore.persist.rehydrate();
-    if (useAppStore.getState().logs.length === 0) {
-      addLog("system", "SignHome control center ready. Local processing only.", "offline");
-    }
+    void Promise.resolve(useAppStore.persist.rehydrate()).then(() => {
+      const state = useAppStore.getState();
+      if (state.useTrained) state.setUseTrained(true);
+      if (useAppStore.getState().logs.length === 0) {
+        addLog("system", "SignHome control center ready. Local processing only.", "offline");
+      }
+    });
   }, [addLog]);
 
   return (
@@ -31,12 +34,19 @@ export function ControlCenter() {
       <div>
         <h1 className="text-2xl font-medium tracking-tight text-fg sm:text-3xl">Control center</h1>
         <p className="mt-1 max-w-2xl text-sm leading-relaxed text-muted">
-          MediaPipe Hands extracts 21 landmarks (63 features). Five static ASL letters — L, A, F, V, W —
-          map onto a 5V relay on Arduino Uno R3. Local, offline, no GPU.
+          Train a Random Forest from your live MediaPipe landmarks to recognize five static ASL gestures.
+          Training and predictions stay on this device; export labeled samples as CSV.
         </p>
       </div>
 
-      <div className="grid w-full min-w-0 items-stretch gap-4 lg:grid-cols-2">
+      <div className="grid w-full min-w-0 items-start gap-4 lg:grid-cols-2 lg:grid-rows-2">
+        <div className="flex min-w-0 flex-col gap-4 lg:row-span-2">
+          <CalibratePanel />
+          <div className="flex min-w-0 flex-col gap-4">
+            <ApplianceRail />
+            <PoseKeys />
+          </div>
+        </div>
         <CameraStage
           videoRef={tracker.videoRef}
           canvasRef={tracker.canvasRef}
@@ -45,8 +55,6 @@ export function ControlCenter() {
           onStop={tracker.stop}
         />
         <VirtualHome />
-        <PoseKeys />
-        <ApplianceRail />
       </div>
 
       <LandmarkInspector hands={tracker.hands} live={live} />
@@ -57,7 +65,6 @@ export function ControlCenter() {
           <ArduinoSerialPanel />
           <ArduinoPins />
           <SettingsPanel />
-          <CalibratePanel />
         </div>
       </div>
     </div>

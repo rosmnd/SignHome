@@ -65,6 +65,7 @@ export function useHandTracker() {
   const frames = useRef(0);
   const fpsTick = useRef(performance.now());
   const running = useRef(false);
+  const lastSampleAt = useRef(0);
 
   const [hands, setHands] = useState<TrackedHand[]>([]);
   const [size, setSize] = useState({ w: 640, h: 480 });
@@ -131,10 +132,13 @@ export function useHandTracker() {
 
       const st = useAppStore.getState();
       if (st.calibrating && pts) {
-        addSamples(st.calibrating, [extractFeatures(pts)]);
-        setDetected({ gesture: st.calibrating, confidence: 1, source: "geometry", holdMs: 0 });
+        if (now - lastSampleAt.current >= 80) {
+          addSamples(st.calibrating, [extractFeatures(pts)]);
+          lastSampleAt.current = now;
+        }
+        setDetected({ gesture: st.calibrating, confidence: 1, source: "rf", holdMs: 0 });
       } else if (pts) {
-        const hit = classifyHand(pts, st.samples, st.useTrained);
+        const hit = classifyHand(pts);
         const pass = hit.gesture && hit.confidence >= st.confidenceMin;
         if (pass && hit.gesture) {
           if (holdRef.current.id !== hit.gesture) {
@@ -251,7 +255,10 @@ export function useHandTracker() {
   }, [stop]);
 
   useEffect(() => {
-    if (calibrating) holdRef.current = { id: null, since: 0 };
+    if (calibrating) {
+      holdRef.current = { id: null, since: 0 };
+      lastSampleAt.current = 0;
+    }
   }, [calibrating]);
 
   return { videoRef, canvasRef, hands, size, start, stop };

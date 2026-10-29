@@ -1,6 +1,12 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import { emptySamples, retrainForest, resetForest } from "./classifier";
+import {
+  canTrainSamples,
+  emptySamples,
+  MAX_SAMPLES_PER_GESTURE,
+  retrainForest,
+  resetForest,
+} from "./classifier";
 import {
   APPLIANCES,
   COOLDOWN_MS,
@@ -25,7 +31,7 @@ export type CameraStatus = "idle" | "loading" | "live" | "denied" | "error";
 interface Detected {
   gesture: GestureId | null;
   confidence: number;
-  source: "rf" | "geometry" | "none";
+  source: "rf" | "none";
   holdMs: number;
 }
 
@@ -55,6 +61,7 @@ interface AppState {
   addLog: (kind: LogKind, message: string, meta?: string) => void;
   clearLogs: () => void;
   addSamples: (g: GestureId, vectors: number[][]) => void;
+  replaceSamples: (samples: Record<GestureId, number[][]>) => void;
   clearSamples: () => void;
   setUseTrained: (v: boolean) => void;
   setCalibrating: (g: GestureId | null) => void;
@@ -67,8 +74,6 @@ function nid(): string {
 }
 
 const MAX_LOGS = 80;
-const MAX_SAMPLES = 120;
-
 function serialLine(g: GestureId, nextOn: boolean): { message: string; meta: string } {
   const def = GESTURES[g];
   const pinLevel = nextOn ? "HIGH" : "LOW";
@@ -110,10 +115,22 @@ export const useAppStore = create<AppState>()(
       setHoldMs: (n) => set({ holdMs: n }),
       setCalibrating: (g) => set({ calibrating: g }),
       setUseTrained: (v) => {
-        set({ useTrained: v });
-        get().addLog("system", v ? "Retraining Random Forest with your samples." : "Using base Random Forest (63 features).");
-        if (v) retrainForest(get().samples);
-        else resetForest();
+        if (v) {
+          const samples = get().samples;
+          if (!canTrainSamples(samples)) {
+            set({ useTrained: false });
+            resetForest();
+            get().addLog("error", "Collect at least 10 live samples for every gesture before training.");
+            return;
+          }
+          const forest = retrainForest(samples);
+          set({ useTrained: true });
+          get().addLog("system", `Random Forest trained on ${forest.nSamples} labeled live samples.`);
+        } else {
+          set({ useTrained: false });
+          resetForest();
+          get().addLog("system", "Live-trained model disabled. Gesture recognition is paused.");
+        }
       },
 
       addLog: (kind, message, meta) =>
@@ -135,14 +152,22 @@ export const useAppStore = create<AppState>()(
 
       addSamples: (g, vectors) =>
         set((st) => {
-          const next = { ...st.samples, [g]: [...st.samples[g], ...vectors].slice(-MAX_SAMPLES) };
+          const next = {
+            ...st.samples,
+            [g]: [...st.samples[g], ...vectors].slice(-MAX_SAMPLES_PER_GESTURE),
+          };
           return { samples: next };
         }),
+
+      replaceSamples: (samples) => {
+        set({ samples, useTrained: false });
+        resetForest();
+      },
 
       clearSamples: () => {
         set({ samples: emptySamples(), useTrained: false });
         resetForest();
-        get().addLog("system", "Calibration samples discarded. Base Random Forest restored.");
+        get().addLog("system", "Training samples discarded. Collect new live samples to enable recognition.");
       },
 
       applyGesture: (g, origin) => {

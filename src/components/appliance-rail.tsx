@@ -18,10 +18,10 @@ export function ApplianceRail() {
   const states: Record<ApplianceId, boolean> = { light, fan, aux };
 
   return (
-    <section className="flex h-full min-w-0 flex-col rounded-xl border border-border bg-surface p-4 shadow-panel">
+    <section className="flex min-w-0 flex-col rounded-xl border border-border bg-surface p-4 shadow-panel">
       <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-subtle">Relays</p>
       <h2 className="mb-3 text-sm font-medium text-fg">Living · bedroom · speaker</h2>
-      <ul className="grid min-h-0 flex-1 grid-cols-3 gap-2">
+      <ul className="grid grid-cols-3 gap-2">
         {(Object.keys(APPLIANCES) as ApplianceId[]).map((id) => {
           const a = APPLIANCES[id];
           const on = states[id];

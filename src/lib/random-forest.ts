@@ -1,6 +1,4 @@
 import { GESTURE_IDS, type GestureId } from "./gestures";
-import { POSES } from "./hand-poses";
-import { extractFeatures, type Landmark } from "./landmarks";
 
 export interface Forest {
   trees: Node[];
@@ -27,39 +25,6 @@ function mulberry32(seed: number): () => number {
     t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
     return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
   };
-}
-
-function jitterPose(lm: Landmark[], rng: () => number): Landmark[] {
-  const s = 0.9 + rng() * 0.2;
-  const ox = (rng() - 0.5) * 0.1;
-  const oy = (rng() - 0.5) * 0.1;
-  const ang = (rng() - 0.5) * 0.28;
-  const c = Math.cos(ang);
-  const sA = Math.sin(ang);
-  const cx = lm[0]!.x;
-  const cy = lm[0]!.y;
-  const flip = rng() > 0.5 ? 1 : -1;
-  return lm.map((p) => {
-    const x0 = (p.x - cx) * flip;
-    const y0 = p.y - cy;
-    return {
-      x: cx + ox + s * (x0 * c - y0 * sA) + (rng() - 0.5) * 0.014,
-      y: cy + oy + s * (x0 * sA + y0 * c) + (rng() - 0.5) * 0.014,
-      z: p.z + (rng() - 0.5) * 0.05,
-    };
-  });
-}
-
-export function syntheticSet(perClass = 90, seed = 2026): Row[] {
-  const rng = mulberry32(seed);
-  const rows: Row[] = [];
-  for (const y of GESTURE_IDS) {
-    const base = POSES[y];
-    for (let i = 0; i < perClass; i++) {
-      rows.push({ x: extractFeatures(jitterPose(base, rng)), y });
-    }
-  }
-  return rows;
 }
 
 function counts(rows: Row[]): Record<GestureId, number> {
@@ -168,24 +133,40 @@ function walk(node: Node, x: number[]): GestureId {
 }
 
 export function trainForest(
-  extra: Array<{ x: number[]; y: GestureId }> = [],
+  samples: Array<{ x: number[]; y: GestureId }>,
   opts?: { trees?: number; seed?: number },
 ): Forest {
+  if (samples.length === 0) {
+    throw new Error("Cannot train the Random Forest without labeled samples.");
+  }
+  const nFeatures = samples[0]!.x.length;
+  if (
+    nFeatures !== 63 ||
+    samples.some((sample) => sample.x.length !== nFeatures || sample.x.some((value) => !Number.isFinite(value)))
+  ) {
+    throw new Error("Random Forest samples must contain exactly 63 finite landmark features.");
+  }
+  const samplesByGesture = new Map(
+    GESTURE_IDS.map((gesture) => [gesture, samples.filter((sample) => sample.y === gesture)]),
+  );
+  if (GESTURE_IDS.some((gesture) => samplesByGesture.get(gesture)!.length === 0)) {
+    throw new Error("Random Forest training requires labeled samples for all five gestures.");
+  }
+
   const nTrees = opts?.trees ?? 40;
   const seed = opts?.seed ?? 2026;
   const rng = mulberry32(seed);
-  const base = syntheticSet(90, seed);
-  const data = extra.length ? base.concat(extra) : base;
-  const nFeatures = data[0]?.x.length ?? 63;
   const trees: Node[] = [];
   for (let t = 0; t < nTrees; t++) {
     const bag: Row[] = [];
-    for (let i = 0; i < data.length; i++) {
-      bag.push(data[Math.floor(rng() * data.length)]!);
+    for (let i = 0; i < samples.length; i++) {
+      const gesture = GESTURE_IDS[Math.floor(rng() * GESTURE_IDS.length)]!;
+      const classSamples = samplesByGesture.get(gesture)!;
+      bag.push(classSamples[Math.floor(rng() * classSamples.length)]!);
     }
     trees.push(grow(bag, 8, rng, nFeatures));
   }
-  return { trees, nTrees, nSamples: data.length, nFeatures };
+  return { trees, nTrees, nSamples: samples.length, nFeatures };
 }
 
 export function predictForest(
@@ -208,22 +189,25 @@ export function predictForest(
   return { gesture: best, confidence: Math.max(0, Math.min(1, 0.55 * vote + 0.45 * margin)) };
 }
 
-let active = trainForest();
+let active: Forest = { trees: [], nTrees: 0, nSamples: 0, nFeatures: 63 };
 
 export function getForest(): Forest {
   return active;
 }
 
 export function retrainForest(user: Record<GestureId, number[][]>): Forest {
-  const extra: Row[] = [];
+  const samples: Row[] = [];
   for (const y of GESTURE_IDS) {
-    for (const x of user[y] ?? []) extra.push({ x, y }, { x, y }, { x, y });
+    for (const x of user[y] ?? []) samples.push({ x, y });
   }
-  active = trainForest(extra, { seed: 2026 + extra.length, trees: 40 });
+  if (samples.length === 0) {
+    throw new Error("Cannot train the Random Forest without labeled samples.");
+  }
+  active = trainForest(samples, { seed: 2026 + samples.length, trees: 40 });
   return active;
 }
 
 export function resetForest(): Forest {
-  active = trainForest();
+  active = { trees: [], nTrees: 0, nSamples: 0, nFeatures: 63 };
   return active;
 }

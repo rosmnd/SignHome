@@ -26,6 +26,7 @@ export function CameraStage({
   const holdMs = useAppStore((s) => s.holdMs);
   const fps = useAppStore((s) => s.fps);
   const calibrating = useAppStore((s) => s.calibrating);
+  const useTrained = useAppStore((s) => s.useTrained);
   const live = cameraStatus === "live";
   const primary = pickPrimary(hands);
 
@@ -88,6 +89,7 @@ export function CameraStage({
           need={holdMs}
           source={detected.source}
           calibrating={calibrating}
+          trained={useTrained}
           hasHand={hands.length > 0}
           live={live}
           hands={hands.length}
@@ -146,6 +148,7 @@ function GestureHud({
   need,
   source,
   calibrating,
+  trained,
   hasHand,
   live,
   hands,
@@ -156,6 +159,7 @@ function GestureHud({
   need: number;
   source: string;
   calibrating: GestureId | null;
+  trained: boolean;
   hasHand: boolean;
   live: boolean;
   hands: number;
@@ -167,9 +171,11 @@ function GestureHud({
     : gesture
       ? GESTURES[gesture].label
       : live
-        ? hasHand
-          ? `${hands} hand${hands === 1 ? "" : "s"} · 21 landmarks`
-          : "Show a hand — 21 joints"
+        ? !trained
+          ? "Train on live gestures to enable recognition"
+          : hasHand
+            ? `${hands} hand${hands === 1 ? "" : "s"} · 21 landmarks`
+            : "Show a hand — 21 joints"
         : "Camera idle";
 
   return (
@@ -177,7 +183,11 @@ function GestureHud({
       <div className="min-w-0 rounded-md border border-border bg-bg/80 px-3 py-2 backdrop-blur-sm">
         <p className="truncate text-sm font-medium text-fg">{name}</p>
         <p className="font-mono text-[11px] text-muted tabular-nums">
-          {live ? `${pct}% · ${source === "rf" ? "random forest" : source}` : "Press Start camera, or use keys 1–5"}
+          {live
+            ? trained
+              ? `${pct}% · ${source === "rf" ? "random forest" : source}`
+              : "Collect samples in Train panel"
+            : "Press Start camera, or use keys 1–5"}
         </p>
         <div className="mt-1.5 h-1 w-full max-w-40 overflow-hidden rounded-full bg-surface-2">
           <div

@@ -1,6 +1,6 @@
 import { Slider } from "@/components/ui/slider";
 import { Switch } from "@/components/ui/switch";
-import { sampleCount } from "@/lib/classifier";
+import { canTrainSamples, sampleCount } from "@/lib/classifier";
 import { useAppStore } from "@/lib/store";
 
 export function SettingsPanel() {
@@ -12,6 +12,7 @@ export function SettingsPanel() {
   const setUseTrained = useAppStore((s) => s.setUseTrained);
   const samples = useAppStore((s) => s.samples);
   const n = sampleCount(samples);
+  const ready = canTrainSamples(samples);
 
   return (
     <section className="rounded-xl border border-border bg-surface p-4 shadow-panel">
@@ -42,10 +43,16 @@ export function SettingsPanel() {
 
       <div className="flex items-center justify-between gap-3 border-t border-border pt-3">
         <div>
-          <p className="text-sm text-fg">Fit Random Forest to my samples</p>
-          <p className="text-xs text-muted">{n} landmark samples · 63-d vectors</p>
+          <p className="text-sm text-fg">Use live-trained Random Forest</p>
+          <p className="text-xs text-muted">
+            {useTrained
+              ? `${n} labeled samples · 63 features`
+              : ready
+                ? `${n} samples ready to train`
+                : "Collect at least 10 samples per gesture"}
+          </p>
         </div>
-        <Switch checked={useTrained && n > 0} onCheckedChange={setUseTrained} disabled={n === 0} />
+        <Switch checked={useTrained && ready} onCheckedChange={setUseTrained} disabled={!ready} />
       </div>
     </section>
   );

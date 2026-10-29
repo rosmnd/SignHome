@@ -11,10 +11,10 @@ export function PoseKeys() {
   const recent = Date.now() - lastFiredAt < 900;
 
   return (
-    <section className="flex h-full min-w-0 flex-col rounded-xl border border-border bg-surface p-4 shadow-panel">
+    <section className="flex min-w-0 flex-col rounded-xl border border-border bg-surface p-4 shadow-panel">
       <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-subtle">Commands</p>
       <h2 className="mb-3 text-sm font-medium text-fg">Five static ASL letters (L, A, F, V, W)</h2>
-      <ul className="grid min-h-0 flex-1 grid-cols-3 gap-2 sm:grid-cols-5">
+      <ul className="grid grid-cols-3 gap-2 sm:grid-cols-5">
         {GESTURE_LIST.map((g) => {
           const active = recent && lastFired === g.id;
           return (

@@ -81,9 +81,9 @@ function Guide() {
             1–5 at 9600 baud.
           </li>
           <li>
-            <span className="text-fg">4. Optional calibrate.</span> Capture buffers per pose and refit the
-            Random Forest on your 63-d landmark vectors — the in-browser equivalent of train_model.py and
-            asl_rf_model.joblib.
+            <span className="text-fg">4. Train on your gestures.</span> In the control center, capture at
+            least 10 live examples for each pose and train the Random Forest. Export the labeled
+            63-feature vectors to CSV or import a compatible CSV to train on that dataset.
           </li>
         </ol>
       </section>
