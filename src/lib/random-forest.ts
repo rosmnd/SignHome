@@ -7,6 +7,12 @@ export interface Forest {
   nFeatures: number;
 }
 
+export interface TrainingMetrics {
+  accuracy: number | null;
+  trees: number;
+  lastTrainedAt: number | null;
+}
+
 type Node =
   | { leaf: true; label: GestureId; conf: number }
   | { leaf: false; feat: number; thr: number; left: Node; right: Node };
@@ -142,7 +148,10 @@ export function trainForest(
   const nFeatures = samples[0]!.x.length;
   if (
     nFeatures !== 63 ||
-    samples.some((sample) => sample.x.length !== nFeatures || sample.x.some((value) => !Number.isFinite(value)))
+    samples.some(
+      (sample) =>
+        sample.x.length !== nFeatures || sample.x.some((value) => !Number.isFinite(value)),
+    )
   ) {
     throw new Error("Random Forest samples must contain exactly 63 finite landmark features.");
   }
@@ -190,6 +199,7 @@ export function predictForest(
 }
 
 let active: Forest = { trees: [], nTrees: 0, nSamples: 0, nFeatures: 63 };
+let trainingMetrics: TrainingMetrics = { accuracy: null, trees: 0, lastTrainedAt: null };
 
 export function getForest(): Forest {
   return active;
@@ -197,17 +207,46 @@ export function getForest(): Forest {
 
 export function retrainForest(user: Record<GestureId, number[][]>): Forest {
   const samples: Row[] = [];
+  const trainingSamples: Row[] = [];
+  const validationSamples: Row[] = [];
   for (const y of GESTURE_IDS) {
-    for (const x of user[y] ?? []) samples.push({ x, y });
+    const vectors = user[y] ?? [];
+    for (const [index, x] of vectors.entries()) {
+      const row = { x, y };
+      samples.push(row);
+      if (vectors.length >= 5 && index % 5 === 0) validationSamples.push(row);
+      else trainingSamples.push(row);
+    }
   }
   if (samples.length === 0) {
     throw new Error("Cannot train the Random Forest without labeled samples.");
   }
+  const validationForest =
+    validationSamples.length > 0
+      ? trainForest(trainingSamples, { seed: 2026 + samples.length, trees: 40 })
+      : null;
   active = trainForest(samples, { seed: 2026 + samples.length, trees: 40 });
+  const correct = validationForest
+    ? validationSamples.reduce(
+        (total, sample) =>
+          total + Number(predictForest(validationForest, sample.x).gesture === sample.y),
+        0,
+      )
+    : 0;
+  trainingMetrics = {
+    accuracy: validationForest ? correct / validationSamples.length : null,
+    trees: active.nTrees,
+    lastTrainedAt: Date.now(),
+  };
   return active;
 }
 
 export function resetForest(): Forest {
   active = { trees: [], nTrees: 0, nSamples: 0, nFeatures: 63 };
+  trainingMetrics = { accuracy: null, trees: 0, lastTrainedAt: null };
   return active;
+}
+
+export function getTrainingMetrics(): TrainingMetrics {
+  return trainingMetrics;
 }

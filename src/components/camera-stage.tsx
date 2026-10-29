@@ -3,7 +3,13 @@ import { HandSkeleton } from "@/components/hand-skeleton";
 import { Button } from "@/components/ui/button";
 import { POSES, POSE_ORDER } from "@/lib/hand-poses";
 import { GESTURES, type GestureId } from "@/lib/gestures";
-import { LANDMARK_COUNT, easeInOut, lerpLandmarks, pickPrimary, type TrackedHand } from "@/lib/landmarks";
+import {
+  LANDMARK_COUNT,
+  easeInOut,
+  lerpLandmarks,
+  pickPrimary,
+  type TrackedHand,
+} from "@/lib/landmarks";
 import { useAppStore } from "@/lib/store";
 import { cn } from "@/lib/utils";
 
@@ -35,7 +41,9 @@ export function CameraStage({
       <header className="flex items-center justify-between gap-3 border-b border-border px-4 py-3">
         <div className="min-w-0">
           <p className="text-xs font-medium uppercase tracking-widest text-subtle">Vision</p>
-          <h2 className="truncate text-sm font-medium text-fg">MediaPipe Hands · 21 landmarks / hand</h2>
+          <h2 className="truncate text-sm font-medium text-fg">
+            MediaPipe Hands · 21 landmarks / hand
+          </h2>
         </div>
         {live ? (
           <Button variant="secondary" size="sm" onClick={onStop}>
@@ -48,7 +56,7 @@ export function CameraStage({
         )}
       </header>
 
-      <div className="relative aspect-video bg-bg sm:aspect-[16/11]">
+      <div className="relative aspect-video bg-bg sm:aspect-[16/10]">
         <video
           ref={videoRef}
           className={cn(
@@ -61,7 +69,10 @@ export function CameraStage({
         />
         <canvas
           ref={canvasRef}
-          className={cn("pointer-events-none absolute inset-0 size-full", live ? "opacity-100" : "opacity-0")}
+          className={cn(
+            "pointer-events-none absolute inset-0 size-full",
+            live ? "opacity-100" : "opacity-0",
+          )}
         />
         {!live && <IdleHand />}
         <div className="pointer-events-none absolute inset-3 rounded-lg border border-border/70" />
@@ -71,14 +82,16 @@ export function CameraStage({
         <div className="absolute bottom-3 right-3 h-3 w-3 border-b border-r border-accent/70" />
 
         {(cameraHint || cameraStatus === "denied" || cameraStatus === "error") && !live && (
-          <p className="absolute inset-x-6 bottom-16 text-center text-sm text-muted">{cameraHint}</p>
+          <p className="absolute inset-x-6 bottom-16 text-center text-sm text-muted">
+            {cameraHint}
+          </p>
         )}
 
         {live && (
           <p className="absolute left-3 top-3 rounded-md border border-border bg-bg/80 px-2 py-1 font-mono text-[11px] text-fg backdrop-blur-sm tabular-nums">
             {hands.length === 0
               ? "no hand"
-              : `${hands.length === 2 ? "L+R" : primary?.handedness ?? "hand"} · ${hands.length * LANDMARK_COUNT} pts · ${fps} fps`}
+              : `${hands.length === 2 ? "L+R" : (primary?.handedness ?? "hand")} · ${hands.length * LANDMARK_COUNT} pts · ${fps} fps`}
           </p>
         )}
 
@@ -133,10 +146,10 @@ function IdleHand() {
   return (
     <div className="absolute inset-0 flex flex-col items-center justify-center scan-grid">
       <HandSkeleton landmarks={lm} numbered className="h-48 w-48 max-w-[70%] text-accent/80" />
-      <p className="mt-3 text-xs uppercase tracking-[0.18em] text-subtle">21 landmarks · demo pose</p>
-      <p className="text-sm text-fg">
-        {def.pose}
+      <p className="mt-3 text-xs uppercase tracking-[0.18em] text-subtle">
+        21 landmarks · demo pose
       </p>
+      <p className="text-sm text-fg">{def.pose}</p>
     </div>
   );
 }

@@ -13,14 +13,21 @@ export function VirtualHome() {
     >
       <header className="flex items-center justify-between border-b border-border px-4 py-3">
         <div>
-          <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-subtle">Virtual home</p>
+          <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-subtle">
+            Virtual home
+          </p>
           <h2 className="text-sm font-medium text-fg">Apartment 4B · simulated relays</h2>
         </div>
         <p className="font-mono text-[11px] text-muted tabular-nums">D2 D3 D4</p>
       </header>
 
-      <div className="relative aspect-video min-h-56 bg-bg sm:aspect-[16/11] sm:min-h-0">
-        <svg viewBox="0 0 640 400" className="absolute inset-0 size-full" role="img" aria-label="Two-room apartment">
+      <div className="relative aspect-video min-h-56 bg-bg sm:aspect-[16/10] sm:min-h-0">
+        <svg
+          viewBox="0 0 640 400"
+          className="absolute inset-0 size-full"
+          role="img"
+          aria-label="Two-room apartment"
+        >
           <rect width="640" height="400" fill="#0c0d11" />
 
           {/* Floor */}
@@ -36,14 +43,42 @@ export function VirtualHome() {
           <path d="M40 80 L320 50 L600 80 L600 110 L320 78 L40 110 Z" fill="#0e1016" />
 
           {/* Window — living */}
-          <rect x="78" y="118" width="96" height="88" rx="2" fill="#0a0c12" stroke="#3a3f4a" strokeWidth="3" />
+          <rect
+            x="78"
+            y="118"
+            width="96"
+            height="88"
+            rx="2"
+            fill="#0a0c12"
+            stroke="#3a3f4a"
+            strokeWidth="3"
+          />
           <line x1="126" y1="118" x2="126" y2="206" stroke="#3a3f4a" strokeWidth="2" />
           <line x1="78" y1="162" x2="174" y2="162" stroke="#3a3f4a" strokeWidth="2" />
-          <rect x="86" y="126" width="32" height="28" fill={light ? "#e8d5b5" : "#1a2230"} opacity={light ? 0.7 : 0.5} />
-          <rect x="134" y="126" width="32" height="28" fill={light ? "#e8d5b5" : "#1a2230"} opacity={light ? 0.55 : 0.4} />
+          <rect
+            x="86"
+            y="126"
+            width="32"
+            height="28"
+            fill={light ? "#e8d5b5" : "#1a2230"}
+            opacity={light ? 0.7 : 0.5}
+          />
+          <rect
+            x="134"
+            y="126"
+            width="32"
+            height="28"
+            fill={light ? "#e8d5b5" : "#1a2230"}
+            opacity={light ? 0.55 : 0.4}
+          />
 
           {/* Sofa */}
-          <path d="M70 292 L190 276 L214 300 L90 318 Z" fill="#1c2028" stroke="#2a303a" strokeWidth="1" />
+          <path
+            d="M70 292 L190 276 L214 300 L90 318 Z"
+            fill="#1c2028"
+            stroke="#2a303a"
+            strokeWidth="1"
+          />
           <path d="M70 268 L190 252 L190 276 L70 292 Z" fill="#222833" />
 
           {/* Floor lamp */}
@@ -52,25 +87,49 @@ export function VirtualHome() {
           <path d="M214 168 L258 168 L248 198 L224 198 Z" fill={light ? "#f3e6cc" : "#3a3f4a"} />
           {light && (
             <>
-              <ellipse className="lamp-glow" cx="236" cy="248" rx="110" ry="88" fill="#c4b49a" opacity="0.38" />
+              <ellipse
+                className="lamp-glow"
+                cx="236"
+                cy="248"
+                rx="110"
+                ry="88"
+                fill="#c4b49a"
+                opacity="0.38"
+              />
               <circle cx="236" cy="186" r="16" fill="#f7edd8" opacity="0.85" />
             </>
           )}
 
           {/* Bed */}
-          <path d="M390 292 L560 272 L572 300 L404 322 Z" fill="#1a1d24" stroke="#2a303a" strokeWidth="1" />
+          <path
+            d="M390 292 L560 272 L572 300 L404 322 Z"
+            fill="#1a1d24"
+            stroke="#2a303a"
+            strokeWidth="1"
+          />
           <path d="M520 276 L560 272 L568 256 L528 260 Z" fill="#2a303a" />
 
           {/* Ceiling fan */}
           <g transform="translate(460 92)">
             <circle cx="0" cy="0" r="6" fill="#8b8e96" />
-            <g className={cn(fan && "fan-spin")} style={{ transformBox: "fill-box", transformOrigin: "center" }}>
+            <g
+              className={cn(fan && "fan-spin")}
+              style={{ transformBox: "fill-box", transformOrigin: "center" }}
+            >
               <ellipse cx="0" cy="-32" rx="9" ry="30" fill="#d8cbb6" opacity={fan ? 1 : 0.4} />
               <ellipse cx="0" cy="32" rx="9" ry="30" fill="#d8cbb6" opacity={fan ? 1 : 0.4} />
               <ellipse cx="-32" cy="0" rx="30" ry="9" fill="#b7c2cc" opacity={fan ? 1 : 0.35} />
               <ellipse cx="32" cy="0" rx="30" ry="9" fill="#b7c2cc" opacity={fan ? 1 : 0.35} />
             </g>
-            <line x1="0" y1="0" x2="0" y2="-18" stroke="#5c5f68" strokeWidth="2" transform="translate(0 -6)" />
+            <line
+              x1="0"
+              y1="0"
+              x2="0"
+              y2="-18"
+              stroke="#5c5f68"
+              strokeWidth="2"
+              transform="translate(0 -6)"
+            />
           </g>
 
           {/* Shelf speaker */}
@@ -85,9 +144,23 @@ export function VirtualHome() {
               stroke="#8b8e96"
               strokeWidth="1.5"
             />
-            <circle cx="0" cy="24" r="6" fill={aux ? "#d8cbb6" : "#3a3f4a"} stroke="#8b8e96" strokeWidth="1" />
+            <circle
+              cx="0"
+              cy="24"
+              r="6"
+              fill={aux ? "#d8cbb6" : "#3a3f4a"}
+              stroke="#8b8e96"
+              strokeWidth="1"
+            />
             <circle cx="0" cy="24" r="2" fill="#12141a" />
-            <circle cx="0" cy="54" r="12" fill={aux ? "#c4b49a" : "#3a3f4a"} stroke="#8b8e96" strokeWidth="1" />
+            <circle
+              cx="0"
+              cy="54"
+              r="12"
+              fill={aux ? "#c4b49a" : "#3a3f4a"}
+              stroke="#8b8e96"
+              strokeWidth="1"
+            />
             <circle cx="0" cy="54" r="4.5" fill="#12141a" />
             <rect x="-18" y="82" width="36" height="6" rx="1.5" fill="#2a303a" />
             {aux && (
@@ -101,10 +174,24 @@ export function VirtualHome() {
           </g>
 
           {/* Room labels */}
-          <text x="120" y="70" fill="#5c5f68" fontSize="11" fontFamily="IBM Plex Sans, sans-serif" letterSpacing="2">
+          <text
+            x="120"
+            y="70"
+            fill="#5c5f68"
+            fontSize="11"
+            fontFamily="IBM Plex Sans, sans-serif"
+            letterSpacing="2"
+          >
             LIVING
           </text>
-          <text x="470" y="70" fill="#5c5f68" fontSize="11" fontFamily="IBM Plex Sans, sans-serif" letterSpacing="2">
+          <text
+            x="470"
+            y="70"
+            fill="#5c5f68"
+            fontSize="11"
+            fontFamily="IBM Plex Sans, sans-serif"
+            letterSpacing="2"
+          >
             BEDROOM
           </text>
         </svg>
